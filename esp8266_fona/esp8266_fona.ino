@@ -1,3 +1,26 @@
+/***************************************************
+  Adafruit MQTT Library FONA Example
+
+  Designed specifically to work with the Adafruit FONA
+  ----> http://www.adafruit.com/products/1946
+  ----> http://www.adafruit.com/products/1963
+  ----> http://www.adafruit.com/products/2468
+  ----> http://www.adafruit.com/products/2542
+
+  These cellular modules use TTL Serial to communicate, 2 pins are
+  required to interface.
+
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
+
+// Modified by Yoshikuni
+// For educational purpose only
+
 #include <Adafruit_SleepyDog.h>
 #include <SoftwareSerial.h>
 #include "Adafruit_FONA.h"
@@ -94,14 +117,14 @@ void setup() {
   while (!Serial);
 
   // Watchdog is optional!
-  //Watchdog.enable(8000);
+  // Watchdog.enable(8000);
   dht.begin();
   Serial.begin(115200);
   pinMode(DSM_PM10, INPUT);
   pinMode(DSM_PM25, INPUT);
   delay(10);
 
-  Serial.println(F("Adafruit FONA MQTT demo"));
+  Serial.println(F("Adafruit FONA MQTT."));
 
   Watchdog.reset();
   delay(5000);  // wait a few seconds to stabilize connection
@@ -131,6 +154,7 @@ void loop() {
 
   Watchdog.reset();
 
+  // now we can publish stuff!
   unsigned long current_millis = millis();
   if (current_millis - previous_millis > interval_time) {
     durationPM10 = pulseIn(DSM_PM10, LOW);
@@ -163,24 +187,33 @@ void loop() {
     Serial.print(F("\nSending data..."));
     if (! sensor_dht_temp.publish(temp)) {
       Serial.println(F("Publish temp failed."));
+    } else {
+      Serial.println(F("Data temp OK!"));
     }
 
     if (! sensor_dht_humidity.publish(humidity)) {
       Serial.println(F("Publish humidity failed."));
+    } else {
+      Serial.println(F("Data humidirty OK!"));
     }
 
     if (! sensor_dsm_pm10.publish(conPM10)) {
       Serial.println(F("Publish pm10 failed."));
+    } else {
+      Serial.println(F("Data pm10 OK!"));
     }
 
     if (! sensor_dsm_pm25.publish(conPM25)) {
       Serial.println(F("Publish pm25 failed."));
+    } else {
+      Serial.println(F("Data pm2.5 OK!"));
     }
 
     previous_millis = current_millis;
   }
 
-  Watchdog.reset();  
+  Watchdog.reset();
+
   // ping the server to keep the mqtt connection alive, only needed if we're not publishing
   //if(! mqtt.ping()) {
   //  Serial.println(F("MQTT Ping failed."));

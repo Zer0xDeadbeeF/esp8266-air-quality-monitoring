@@ -125,6 +125,7 @@ void setup() {
 
 void loop() {
   // cuma memastikan kalo masih connected atau ngga
+  // kalo ngga (disconnected), function bakal melakukan reconnect
   MQTT_connect();
 
   unsigned long current_millis = millis();
@@ -164,10 +165,30 @@ void loop() {
     }
 
     // Publish Data
-    sensor_dht_temp.publish(temp);
-    sensor_dht_humidity.publish(humidity);
-    sensor_dsm_pm10.publish(conPM1);
-    sensor_dsm_pm25.publish(conPM25);
+    Serial.print(F("\nSending data..."));
+    if (! sensor_dht_temp.publish(temp)) {
+      Serial.println(F("Publish temp failed."));
+    } else {
+      Serial.println(F("Data temp OK!"));
+    }
+
+    if (! sensor_dht_humidity.publish(humidity)) {
+      Serial.println(F("Publish humidity failed."));
+    } else {
+      Serial.println(F("Data humidirty OK!"));
+    }
+
+    if (! sensor_dsm_pm10.publish(conPM10)) {
+      Serial.println(F("Publish pm10 failed."));
+    } else {
+      Serial.println(F("Data pm10 OK!"));
+    }
+
+    if (! sensor_dsm_pm25.publish(conPM25)) {
+      Serial.println(F("Publish pm25 failed."));
+    } else {
+      Serial.println(F("Data pm2.5 OK!"));
+    }
 
     // update previous_milis
     previous_millis = current_millis;
