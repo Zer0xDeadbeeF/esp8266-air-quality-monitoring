@@ -28,9 +28,8 @@
 #include "Adafruit_MQTT_FONA.h"
 #include "DHT.h"
 
-// Default pins for Feather 32u4 FONA
-#define FONA_RX  9 
-#define FONA_TX  8 
+#define FONA_TX  0 // D3
+#define FONA_RX  2 // D4 
 #define FONA_RST 4
 
 SoftwareSerial fonaSS = SoftwareSerial(FONA_TX, FONA_RX);
@@ -45,12 +44,12 @@ Adafruit_FONA fona = Adafruit_FONA(FONA_RST);
 #define MQTT_USERNAME    "server_username"
 #define MQTT_KEY         "server_key.or.password"
 
-#define DHTPIN 7
+#define DHTPIN D7
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
-#define DSM_PM10 5 // Perlu pin PWM
-#define DSM_PM25 6 // Perlu pin PWM
+#define DSM_PM10 D5 // Perlu pin PWM
+#define DSM_PM25 D6 // Perlu pin PWM
 
 /************ Global State (you don't need to change this!) ******************/
 
