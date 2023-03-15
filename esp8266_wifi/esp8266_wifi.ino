@@ -36,13 +36,13 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_UNAME, MQTT_PASS
 
 /************************ Initial Setup Sensor and MQTT client ******************************************/
 // Define tipe DHT (sensor temperatur dan kelembaban)
-#define DHTPIN 7
+#define DHTPIN D7
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
 // detail DSM501
-#define DSM501_PM1 5
-#define DSM501_PM25 6
+#define DSM501_PM1 D5
+#define DSM501_PM25 D6
 
 Adafruit_MQTT_Publish sensor_dht_temp = Adafruit_MQTT_Publish(&mqtt, MQTT_UNAME "/topic/sensor_dht_temp");
 Adafruit_MQTT_Publish sensor_dht_humidity = Adafruit_MQTT_Publish(&mqtt, MQTT_UNAME "/topic/sensor_dht_humidity");
