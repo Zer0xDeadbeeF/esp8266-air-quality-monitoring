@@ -24,8 +24,8 @@
 #include <Adafruit_SleepyDog.h>
 #include <SoftwareSerial.h>
 #include "Adafruit_FONA.h"
-#include "Adafruit_MQTT.h"
-#include "Adafruit_MQTT_FONA.h"
+//#include "Adafruit_MQTT.h"
+//#include "Adafruit_MQTT_FONA.h"
 #include "DHT.h"
 
 #define FONA_TX  0 // D3
@@ -35,14 +35,15 @@
 SoftwareSerial fonaSS = SoftwareSerial(FONA_TX, FONA_RX);
 Adafruit_FONA fona = Adafruit_FONA(FONA_RST);
 
-#define FONA_APN       ""
-#define FONA_USERNAME  ""
-#define FONA_PASSWORD  ""
+// Beda kartu provider, beda lagi APN
+#define FONA_APN       "internet"
+#define FONA_USERNAME  "3gprs"
+#define FONA_PASSWORD  "3gprs"
 
-#define MQTT_SERVER      "server_address.or.ip"
-#define MQTT_SERVERPORT  1883
-#define MQTT_USERNAME    "server_username"
-#define MQTT_KEY         "server_key.or.password"
+#define MQTT_SERVER      "url/ip address server"
+#define MQTT_SERVERPORT  1883 // Default MQTT PORT
+#define MQTT_USERNAME    "username"
+#define MQTT_KEY         "root"
 
 #define DHTPIN D7
 #define DHTTYPE DHT22
@@ -51,24 +52,12 @@ DHT dht(DHTPIN, DHTTYPE);
 #define DSM_PM10 D5 // Perlu pin PWM
 #define DSM_PM25 D6 // Perlu pin PWM
 
-/************ Global State (you don't need to change this!) ******************/
-
-Adafruit_MQTT_FONA mqtt(&fona, MQTT_SERVER, MQTT_SERVERPORT, MQTT_USERNAME, MQTT_KEY);
-
 // You don't need to change anything below this line!
 #define halt(s) { Serial.println(F( s )); while(1);  }
 
 // FONAconnect is a helper function that sets up the FONA and connects to
 // the GPRS network. See the fonahelper.cpp tab above for the source!
 boolean FONAconnect(const __FlashStringHelper *apn, const __FlashStringHelper *username, const __FlashStringHelper *password);
-
-Adafruit_MQTT_Publish sensor_dht_temp = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/topic/sensor_dht_temp");
-Adafruit_MQTT_Publish sensor_dht_humidity = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/topic/sensor_dht_humidity");
-Adafruit_MQTT_Publish sensor_dsm_pm10 = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/topic/sensor_dsm_pm10");
-Adafruit_MQTT_Publish sensor_dsm_pm25 = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/topic/sensor_dsm_pm25");
-
-
-/*************************** Sketch Code ************************************/
 
 // How many transmission failures in a row we're willing to be ok with before reset
 unsigned long previous_millis = 0;
@@ -93,25 +82,6 @@ float calculateConcentration(long lowpulseInMicroSeconds, long durationinSeconds
   return concentration;
 }
 
-void MQTT_connect() {
-  int8_t ret;
-
-  // Stop if already connected.
-  if (mqtt.connected()) {
-    return;
-  }
-
-  Serial.print("Connecting to MQTT... ");
-
-  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-    Serial.println(mqtt.connectErrorString(ret));
-    Serial.println("Retrying MQTT connection in 5 seconds...");
-    mqtt.disconnect();
-    delay(5000);  // wait 5 seconds
-  }
-  Serial.println("MQTT Connected!");
-}
-
 void setup() {
   while (!Serial);
 
@@ -123,7 +93,7 @@ void setup() {
   pinMode(DSM_PM25, INPUT);
   delay(10);
 
-  Serial.println(F("Adafruit FONA MQTT."));
+  Serial.println(F("Adafruit FONA HTTP."));
 
   Watchdog.reset();
   delay(5000);  // wait a few seconds to stabilize connection
@@ -141,16 +111,8 @@ void setup() {
   Watchdog.reset();
 }
 
-
 void loop() {
   // Make sure to reset watchdog every loop iteration!
-  Watchdog.reset();
-
-  // Ensure the connection to the MQTT server is alive (this will make the first
-  // connection and automatically reconnect when disconnected).  See the MQTT_connect
-  // function definition further below.
-  MQTT_connect();
-
   Watchdog.reset();
 
   // now we can publish stuff!
@@ -183,38 +145,37 @@ void loop() {
       return;
     }
 
-    Serial.print(F("\nSending data..."));
-    if (! sensor_dht_temp.publish(temp)) {
-      Serial.println(F("Publish temp failed."));
-    } else {
-      Serial.println(F("Data temp OK!"));
+    // post data
+    uint16_t statuscode;
+    int16_t length;
+    char url[80] = "api/v4/mqtt/publish"; // host + "api/v4/mqtt/publish"; 
+    char data[80] = "{\"topic\":\"topic_name\",\"payload\":\"some_data\"}";
+
+    Serial.println(F("NOTE: in beta! Use simple websites to post!"));
+    Serial.println(F("URL to post (e.g. httpbin.org/post):"));
+    Serial.print(F("http://"));
+    Serial.println(url);
+    Serial.println(F("Data to post (e.g. \"foo\" or \"{\"simple\":\"json\"}\"):"));
+    Serial.println(data);
+
+    Serial.println(F("****"));
+    if (!fona.HTTP_POST_start(url, F("application/json"), (uint8_t *) data, strlen(data), &statuscode, (uint16_t *)&length)) {
+      Serial.println("Failed!");
     }
 
-    if (! sensor_dht_humidity.publish(humidity)) {
-      Serial.println(F("Publish humidity failed."));
-    } else {
-      Serial.println(F("Data humidirty OK!"));
+    while (length > 0) {
+      while (fona.available()) {
+        char c = fona.read();
+                Serial.write(c);
+                length--;
+                if (! length) break;
+      }
     }
-
-    if (! sensor_dsm_pm10.publish(conPM10)) {
-      Serial.println(F("Publish pm10 failed."));
-    } else {
-      Serial.println(F("Data pm10 OK!"));
-    }
-
-    if (! sensor_dsm_pm25.publish(conPM25)) {
-      Serial.println(F("Publish pm25 failed."));
-    } else {
-      Serial.println(F("Data pm2.5 OK!"));
-    }
+    Serial.println(F("\n****"));
+    fona.HTTP_POST_end();
 
     previous_millis = current_millis;
-  }
+    }
 
-  Watchdog.reset();
-
-  // ping the server to keep the mqtt connection alive, only needed if we're not publishing
-  //if(! mqtt.ping()) {
-  //  Serial.println(F("MQTT Ping failed."));
-  //}
+    Watchdog.reset();
 }

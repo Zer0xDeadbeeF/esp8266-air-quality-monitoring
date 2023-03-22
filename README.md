@@ -3,7 +3,7 @@
 ToDo:
 - [x] gather sensor device and others tools required
 - [x] make code base
-- [ ] make Fritzing model
+- [x] make Fritzing model
 - [ ] make container for the device
 - [ ] make server using mosquitto(server) and NodeRED(frontend)
 
