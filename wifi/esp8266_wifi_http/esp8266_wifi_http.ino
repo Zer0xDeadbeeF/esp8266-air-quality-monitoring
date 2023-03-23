@@ -145,6 +145,7 @@ void loop() {
     // cek apakah sensor berhasil membaca suhu/kelembaban
     if (isnan(humidity) || isnan(temp)) {
       Serial.println(F("Gagal membaca dari sensor DHT!")); 
+      // karena gagal membaca data dari sensor, 
       // data yang akan dipublish berupa "0.0"
       temp = 0.0;
       humidity = 0.0;

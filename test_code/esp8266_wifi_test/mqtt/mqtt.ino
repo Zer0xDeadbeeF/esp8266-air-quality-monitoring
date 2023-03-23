@@ -18,37 +18,39 @@ const char* ssid = "";
 const char* password = "";
 
 // detail server mqtt
-// di bawah ini pakai broker publik emqx
+// below using emqx public mqtt broker
 #define server_name  "broker.emqx.io"
 #define server_port  1883
 #define server_user  ""
 #define server_pass  ""
 
-// konfigurasi mau pakai apa connect ke servernya
-WiFiClient client; // defaultnya ini
-// atau pakai WiFiClientSecure untuk SSL
+// Create an ESP8266 WiFiClient class to connect to the MQTT server.
+WiFiClient client; 
+// or use WiFiClientSecure for SSL
 //WiFiClientSecure client;
 
 // setup mqtt
-// MQTT_QOS_0 untuk publish data dengan QoS 0
-// MQTT_QOS_1 untuk publish data dengan QoS 1
+// MQTT_QOS_0 for publishing data using QoS 0
+// MQTT_QOS_1 for publishing data using QoS 1
 // 
-// QoS 2 belum diimplementasikan dalam librarynya,
-// jadi ini keterbatasan dari library.
-// baca: https://learn.adafruit.com/mqtt-adafruit-io-and-you/qos-and-wills
+// There's also QoS 2, This is a bit more complex because you need to 
+// start tracking packet IDs so we'll leave that for a later time.
+// read: https://learn.adafruit.com/mqtt-adafruit-io-and-you/qos-and-wills
 //
+
 Adafruit_MQTT_Client mqtt(&client, server_name, server_port, server_user, server_pass);
-Adafruit_MQTT_Publish contoh_publish = Adafruit_MQTT_Publish(&mqtt, "testtopic/contoh", MQTT_QOS_0); 
+Adafruit_MQTT_Publish example_publish = Adafruit_MQTT_Publish(&mqtt, "testtopic/example", MQTT_QOS_0); 
 
 
-// setting delay pengiriman data
+// set delay
 unsigned long previous_millis = 0;
-unsigned long interval_time = 2000; // 2000ms berarti 2 detik
+unsigned long interval_time = 2000; // 2000ms means 2 second
 
 // dummy payload
 char* payload = "Hello, World!";
 
-// dari contoh kodingan, harus nambahin ini. Ada bug di IDE v1.6.6.
+// Bug workaround for Arduino 1.6.6, it seems to need a function declaration
+// for some reason (only affects ESP8266, likely an arduino-builder bug).
 void MQTT_connect();
 
 void connect_to_wifi() {
@@ -72,7 +74,7 @@ void setup() {
   Serial.println();
   Serial.println();
 
-  // liat wifi yang ada di sekitar
+  // list of wifi around
   int number_of_networks = WiFi.scanNetworks();
   for(int i =0; i<number_of_networks; i++){
 
@@ -83,12 +85,14 @@ void setup() {
       Serial.println("-----------------------");
   }
 
-  WiFi.mode(WIFI_STA); // ubah mode jadi client, bukan Acces Point (hotspot)
+  WiFi.mode(WIFI_STA);
   connect_to_wifi();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // Ensure the connection to the MQTT server is alive (this will make the first
+  // connection and automatically reconnect when disconnected).  See the MQTT_connect
+  // function definition further below.
   MQTT_connect();
   
   unsigned long current_millis = millis();
@@ -96,21 +100,23 @@ void loop() {
   if (current_millis - previous_millis > interval_time) {
     if (WiFi.status() == WL_CONNECTED) {
 
-      // kirim data
+      // publish data
       Serial.println("Publishing data: ");
       Serial.println(payload);
       
-      if (! contoh_publish.publish(payload)) {
+      if (! example_publish.publish(payload)) {
         Serial.println("Failed!");
       } else {
         Serial.println("Published!");
       }
 
-      // ping server biar koneksi mqtt nya tetap terhubung
-      // kalo frekuensi publish datanya <=  KEEPALIVE, gak perlu
-      //if (! mqtt.ping()){
-      //  mqtt.disconnect();
-      //}
+      // ping the server to keep the mqtt connection alive
+      // NOT required if you are publishing once every KEEPALIVE seconds
+      /*
+      if(! mqtt.ping()) {
+        mqtt.disconnect();
+      }
+      */
     } else {
       Serial.println("WiFi disconnected!");
       connect_to_wifi();
@@ -119,6 +125,9 @@ void loop() {
   }
 }
 
+
+// Function to connect and reconnect as necessary to the MQTT server.
+// Should be called in the loop function and it will take care if connecting.
 void MQTT_connect() {
   int8_t ret;
 
