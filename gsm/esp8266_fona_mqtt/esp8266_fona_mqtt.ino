@@ -21,12 +21,14 @@
 // Modified by Yoshikuni
 // For educational purpose only
 
+#include <Adafruit_Sensor.h>
 #include <Adafruit_SleepyDog.h>
 #include <SoftwareSerial.h>
 #include "Adafruit_FONA.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_FONA.h"
-#include "DHT.h"
+#include <DHT.h>
+#include <DHT_U.h>
 
 #define FONA_TX  0 // D3
 #define FONA_RX  2 // D4 
