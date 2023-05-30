@@ -28,18 +28,8 @@
 // 70 7C 82 07 F3 58 18 87 25 42 31 83 45 86 BD 17 86 71 4E 1F
 const uint8_t fingerprint[20] = {0x70, 0x7C, 0x82, 0x07, 0xF3, 0x58, 0x18, 0x87, 0x25, 0x42, 0x31, 0x83, 0x45, 0x86, 0xBD, 0x17, 0x86, 0x71, 0x4E, 0x1F};
 
-// Detail jaringan WiFi yang akan dihubungkan
-const char* ssid = "";
-const char* password = "";
-
-// Detail server RESTAPI
-// Di bawah ini contoh server restapi gratis
-//
-//#define server_name  "https://httpbin.org/post"
-#define server_name  "https://jsonplaceholder.typicode.com/posts"
-//#define server_port 443
-//#define server_user ""
-//#define server_pass ""
+// Detail wifi dan server edit di secret.h
+#include "secret.h"
 
 // setting delay pengiriman data
 unsigned long previous_millis = 0;
@@ -77,7 +67,7 @@ float calculateConcentration(long lowpulseInMicroSeconds, long durationinSeconds
 long lastMsg = 0;
 
 void connect_to_wifi() {
-  WiFi.begin(ssid, password);
+  WiFi.begin(wifi_ssid, wifi_pass);
   Serial.println("Connecting to WiFi..");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -89,7 +79,7 @@ void connect_to_wifi() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   // Serial.setDebugOutput(true);
 
   Serial.println();

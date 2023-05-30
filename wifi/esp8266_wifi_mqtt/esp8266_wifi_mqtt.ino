@@ -12,16 +12,8 @@
 #include "DHT.h"
 #include "DHT_U.h"
 
-// detail wifi
-const char* ssid = "";
-const char* password = "";
-
-// detail server mqtt
-// di bawah ini pakai broker publik emqx
-#define server_name  "broker.emqx.io"
-#define server_port  1883
-#define server_user  ""
-#define server_pass  ""
+// detail wifi dan server edit di file secret.h
+#include "secret.h"
 
 // konfigurasi mau pakai apa connect ke servernya
 WiFiClient client; // defaultnya ini
@@ -79,7 +71,7 @@ float calculateConcentration(long lowpulseInMicroSeconds, long durationinSeconds
 void MQTT_connect();
 
 void connect_to_wifi() {
-  WiFi.begin(ssid, password);
+  WiFi.begin(wifi_ssid, wifi_pass);
   Serial.println("Connecting to WiFi..");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -92,7 +84,7 @@ void connect_to_wifi() {
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
   // Serial.setDebugOutput(true);
 
   Serial.println();

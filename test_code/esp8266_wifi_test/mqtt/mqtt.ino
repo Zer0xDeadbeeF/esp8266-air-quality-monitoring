@@ -19,7 +19,7 @@ const char* password = "";
 
 // detail server mqtt
 // below using emqx public mqtt broker
-#define server_name  "broker.emqx.io"
+#define server_name  "192.168.69.69"
 #define server_port  1883
 #define server_user  ""
 #define server_pass  ""
@@ -41,13 +41,12 @@ WiFiClient client;
 Adafruit_MQTT_Client mqtt(&client, server_name, server_port, server_user, server_pass);
 Adafruit_MQTT_Publish example_publish = Adafruit_MQTT_Publish(&mqtt, "testtopic/example", MQTT_QOS_0); 
 
+//set payload
+char payload[] = "Ini Dummy Payload";
 
 // set delay
 unsigned long previous_millis = 0;
 unsigned long interval_time = 2000; // 2000ms means 2 second
-
-// dummy payload
-char* payload = "Hello, World!";
 
 // Bug workaround for Arduino 1.6.6, it seems to need a function declaration
 // for some reason (only affects ESP8266, likely an arduino-builder bug).
@@ -67,7 +66,7 @@ void connect_to_wifi() {
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
   // Serial.setDebugOutput(true);
 
   Serial.println();
@@ -102,7 +101,6 @@ void loop() {
 
       // publish data
       Serial.println("Publishing data: ");
-      Serial.println(payload);
       
       if (! example_publish.publish(payload)) {
         Serial.println("Failed!");

@@ -90,7 +90,7 @@ void setup() {
   // Watchdog is optional!
   // Watchdog.enable(8000);
   dht.begin();
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(DSM_PM10, INPUT);
   pinMode(DSM_PM25, INPUT);
   delay(10);
