@@ -45,7 +45,7 @@ void setup_hardware() {
 	pinMode(DSM501_PM25_PIN, INPUT);
 
 	// wait 60s to warmup dsm501a
-	for (int i = 0; i <= 20; i++) {
+	for (int i = 0; i <= 60; i++) {
 		delay(1000);
 		Serial.print(i);
 		Serial.println(" s (wait 60s for dsm501a to warm up.)");
