@@ -45,7 +45,7 @@ void setup_hardware() {
 	pinMode(DSM501_PM25_PIN, INPUT);
 
 	// wait 60s to warmup dsm501a
-	for (int i = 0; i <= 60; i++) {
+	for (int i = 0; i <= 10; i++) {
 		delay(1000);
 		Serial.print(i);
 		Serial.println(" s (wait 60s for dsm501a to warm up.)");
@@ -112,12 +112,12 @@ float get_particle_weight(float ratio) {
 // formatting payload into JSON format
 void set_mqtt_payload(float concentration_pm10, float concentration_pm25, float weight_pm10, float weight_pm25, float temp, float humidity) {
   String payload = "{";
-  payload += "\"cPM10\": \"" + String(concentration_pm10) + "\",";
-  payload += "\"cPM25\": \"" + String(concentration_pm25) + "\",";
-  payload += "\"wPM10\": \"" + String(weight_pm10) + "\",";
-  payload += "\"wPM25\": \"" + String(weight_pm25) + "\",";
-  payload += "\"temp\": \"" + String(temp) + "\",";
-  payload += "\"humidity\": \"" + String(humidity) + "\",";
+  payload += "\"cPM10\": " + String(concentration_pm10) + ",";
+  payload += "\"cPM25\": " + String(concentration_pm25) + ",";
+  payload += "\"wPM10\": " + String(weight_pm10) + ",";
+  payload += "\"wPM25\": " + String(weight_pm25) + ",";
+  payload += "\"temp\": " + String(temp) + ",";
+  payload += "\"humidity\": " + String(humidity);
   payload += "}";
 
   /*
@@ -130,9 +130,9 @@ void set_mqtt_payload(float concentration_pm10, float concentration_pm25, float 
 
   // publish payload
 	if (msg_payload.publish(converted_payload)) {
-    Serial.println("[info] payload published!");
+    // Serial.println("[info] payload published!");
   } else {
-    Serial.println("[error] payload not published due error.");
+    // Serial.println("[error] payload not published due error.");
   }
 }
 
@@ -179,13 +179,13 @@ void loop() {
 		humidity = dht.readHumidity();
 
 		// for debugging only
-		Serial.println("========================================================");
-		Serial.print("PM10 Concentration: "); Serial.println(concentration_pm10);
-    Serial.print("PM10 Weight: "); Serial.println(weight_pm10);
-    Serial.print("PM2.5 Concentration: "); Serial.println(concentration_pm25);
-    Serial.print("PM2.5 Weight: "); Serial.println(weight_pm25);
-    Serial.print("Temperature: "); Serial.println(temp);
-    Serial.print("Humidity: "); Serial.println(humidity);
+		// Serial.println("========================================================");
+		// Serial.print("PM10 Concentration: "); Serial.println(concentration_pm10);
+    // Serial.print("PM10 Weight: "); Serial.println(weight_pm10);
+    // Serial.print("PM2.5 Concentration: "); Serial.println(concentration_pm25);
+    // Serial.print("PM2.5 Weight: "); Serial.println(weight_pm25);
+    // Serial.print("Temperature: "); Serial.println(temp);
+    // Serial.print("Humidity: "); Serial.println(humidity);
 
 		// set and then send payload
 		set_mqtt_payload(concentration_pm10, concentration_pm25, weight_pm10, weight_pm25, temp, humidity);
