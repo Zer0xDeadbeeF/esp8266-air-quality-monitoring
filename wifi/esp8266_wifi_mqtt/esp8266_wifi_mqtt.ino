@@ -162,7 +162,7 @@ void loop() {
       if (! sensor_dht_humidity.publish(humidity)) {
         Serial.println(F("Publish humidity failed."));
       } else {
-        Serial.println(F("Data humidirty OK!"));
+        Serial.println(F("Data humidity OK!"));
       }
 
       if (! sensor_dsm_pm10.publish(conPM10)) {
