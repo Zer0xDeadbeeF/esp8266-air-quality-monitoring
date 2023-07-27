@@ -36,7 +36,7 @@ float concentration_pm25 = 0;
 
 // set interval time
 unsigned long start_time;
-unsigned long interval_time = 2000; // 2000ms means 2s
+unsigned long interval_time = 10000; // 2000ms means 2s
 
 
 // warming up hardware
@@ -96,7 +96,7 @@ void connect_to_mqtt() {
 
 
 // calculate polution weight to mg/m^3
-float get_particle_weight(float ratio) {
+float calculate_pm(float ratio) {
 	/*
 	 * from data sheet, regresion function is
 	 * 		y=0.1776*x^3-2.24*x^2+ 94.003*x
@@ -110,12 +110,10 @@ float get_particle_weight(float ratio) {
 
 
 // formatting payload into JSON format
-void set_mqtt_payload(float concentration_pm10, float concentration_pm25, float weight_pm10, float weight_pm25, float temp, float humidity) {
+void set_mqtt_payload(float concentration_pm10, float concentration_pm25, float temp, float humidity) {
   String payload = "{";
   payload += "\"cPM10\": " + String(concentration_pm10) + ",";
   payload += "\"cPM25\": " + String(concentration_pm25) + ",";
-  payload += "\"wPM10\": " + String(weight_pm10) + ",";
-  payload += "\"wPM25\": " + String(weight_pm25) + ",";
   payload += "\"temp\": " + String(temp) + ",";
   payload += "\"humidity\": " + String(humidity);
   payload += "}";
@@ -167,13 +165,10 @@ void loop() {
 
 	if ((millis() - start_time) > interval_time) {
 		ratio_pm10 = lpo_pm10 / (interval_time * 10.0);
-		concentration_pm10 = 1.1 * pow(ratio_pm10,3) - 3.8 * pow(ratio_pm10,2) + 520 * ratio_pm10 + 0.62;
+		concentration_pm10 = calculate_pm(ratio_pm10);
 
 		ratio_pm25 = lpo_pm25 / (interval_time * 10.0);
-		concentration_pm25 = 1.1 * pow(ratio_pm25,3) - 3.8 * pow(ratio_pm25,2) + 520 * ratio_pm25 + 0.62;
-
-		float weight_pm10 = get_particle_weight(ratio_pm10);
-		float weight_pm25 = get_particle_weight(ratio_pm25);
+		concentration_pm25 = calculate_pm(ratio_pm25);
 
 		// get dht data
 		temp = dht.readTemperature();
@@ -181,15 +176,15 @@ void loop() {
 
 		// for debugging only
 		// Serial.println("========================================================");
+    // Serial.print("lpo pm10: "); Serial.println(lpo_pm10);
 		// Serial.print("PM10 Concentration: "); Serial.println(concentration_pm10);
-    // Serial.print("PM10 Weight: "); Serial.println(weight_pm10);
+    // Serial.print("lpo pm25: "); Serial.println(lpo_pm25);
     // Serial.print("PM2.5 Concentration: "); Serial.println(concentration_pm25);
-    // Serial.print("PM2.5 Weight: "); Serial.println(weight_pm25);
     // Serial.print("Temperature: "); Serial.println(temp);
     // Serial.print("Humidity: "); Serial.println(humidity);
 
 		// set and then send payload
-		set_mqtt_payload(concentration_pm10, concentration_pm25, weight_pm10, weight_pm25, temp, humidity);
+		set_mqtt_payload(concentration_pm10, concentration_pm25, temp, humidity);
 
 		lpo_pm10 = 0;
 		lpo_pm25 = 0;
