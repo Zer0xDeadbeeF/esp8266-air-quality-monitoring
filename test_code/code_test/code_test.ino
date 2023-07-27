@@ -36,7 +36,7 @@ float concentration_pm25 = 0;
 
 // set interval time
 unsigned long start_time;
-unsigned long interval_time = 10000; // 2000ms means 2s
+unsigned long interval_time = 10000; // in millisecond
 
 
 // warming up hardware
@@ -164,10 +164,10 @@ void loop() {
 	lpo_pm25 += pulseIn(DSM501_PM25_PIN, LOW);
 
 	if ((millis() - start_time) > interval_time) {
-		ratio_pm10 = lpo_pm10 / (interval_time * 10.0);
+		ratio_pm10 = ((lpo_pm10/1000000.0) / (interval_time/1000)) * 100.0;
 		concentration_pm10 = calculate_pm(ratio_pm10);
 
-		ratio_pm25 = lpo_pm25 / (interval_time * 10.0);
+		ratio_pm25 = ((lpo_pm25/1000000.0) / (interval_time/1000)) * 100.0;
 		concentration_pm25 = calculate_pm(ratio_pm25);
 
 		// get dht data
